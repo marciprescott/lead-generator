@@ -1,4 +1,17 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+const firebaseConfig = {
+  dataBaseURL: "https://leads--tracker-default-rtdb.firebaseio.com",
+  projectId: "leads--tracker",
+};
+
+const app = initializeApp(firebaseConfig);
 const inputBtn = document.getElementById("input-btn");
+const database = getDatabase(app);
+console.log(database);
+console.log(firebaseConfig.databaseURL);
+
 let myLeads = [];
 const inputEl = document.getElementById("input-el");
 const ulEl = document.getElementById("ul-el");
