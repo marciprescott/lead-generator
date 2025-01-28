@@ -1,5 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  remove,
+} from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
 const firebaseConfig = {
   dataBaseURL: "https://leads--tracker-default-rtdb.firebaseio.com",
@@ -11,28 +17,11 @@ const inputBtn = document.getElementById("input-btn");
 const database = getDatabase(app);
 console.log(database);
 console.log(firebaseConfig.databaseURL);
+const referenceInDB = ref(database, "leads");
 
-let myLeads = [];
 const inputEl = document.getElementById("input-el");
 const ulEl = document.getElementById("ul-el");
-let leadsFromLocalStorage = JSON.parse(localStorage.getItem("myLeads"));
-const tabBtn = document.getElementById("tab-btn");
-console.log(localStorage.getItem(myLeads));
-
 const deleteBtn = document.getElementById("delete-btn");
-
-if (leadsFromLocalStorage) {
-  myLeads = leadsFromLocalStorage;
-  render();
-}
-
-tabBtn.addEventListener("click", function () {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    myLeads.push(tabs[0].url);
-    localStorage.setItem("myLeads", JSON.stringify(myLeads));
-    render(myLeads);
-  });
-});
 
 function render(leads) {
   let listItems = "";
@@ -49,19 +38,19 @@ function render(leads) {
 }
 deleteBtn.addEventListener("dblclick", function () {
   console.log("double clicked!");
-  localStorage.clear();
-  myLeads = [];
-  render(myLeads);
+  remove(referenceInDB);
+  ulEl.innerHTML = "";
 });
-
+onValue(referenceInDB, function (snapshot) {
+  const snapshotDoesExist = snapshot.exists();
+  if (snapshotDoesExist) {
+    const snapshotValues = snapshot.val();
+    const leads = Object.values(snapshotValues);
+    render(leads);
+    console.log(leads);
+  }
+});
 inputBtn.addEventListener("click", function () {
-  myLeads.push(inputEl.value);
+  push(referenceInDB, inputEl.value);
   inputEl.value = "";
-  // Save the myLeads array to localStorage
-  // PS: remember JSON.stringify()
-  localStorage.setItem("myLeads", JSON.stringify(myLeads));
-  render(myLeads);
-
-  // To verify that it works:
-  console.log(localStorage.getItem("myLeads"));
 });
